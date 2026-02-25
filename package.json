@@ -1,10 +1,10 @@
 {
-  "name": "adminer-node",
-  "version": "1.0.0",
+  "name": "@intranefr/adminer-node",
+  "version": "1.2.2",
   "description": "Database management UI for MySQL, MariaDB, PostgreSQL and SQLite — runnable via npx",
   "type": "module",
   "bin": {
-    "adminer-node": "./bin/adminer-node.js"
+    "adminer-node": "bin/adminer-node.js"
   },
   "files": [
     "bin/",

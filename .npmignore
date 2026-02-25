@@ -1,0 +1,18 @@
+# Development & reference files
+ref-adminerevo/
+docs/
+.github/
+.travis.yml
+*.test.js
+*.spec.js
+
+# Temp / editor
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Coverage / logs
+coverage/
+*.log

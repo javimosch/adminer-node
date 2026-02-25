@@ -1,7 +1,7 @@
 {
   "name": "adminer-node",
   "version": "1.0.0",
-  "description": "Database management UI for MySQL, PostgreSQL and SQLite — runnable via npx",
+  "description": "Database management UI for MySQL, MariaDB, PostgreSQL and SQLite — runnable via npx",
   "type": "module",
   "bin": {
     "adminer-node": "./bin/adminer-node.js"
@@ -9,7 +9,9 @@
   "files": [
     "bin/",
     "src/",
-    "public/"
+    "public/",
+    "README.md",
+    "LICENSE"
   ],
   "dependencies": {
     "better-sqlite3": "^12.6.2",
@@ -24,10 +26,22 @@
     "adminer",
     "database",
     "mysql",
+    "mariadb",
     "postgresql",
     "sqlite",
     "admin",
-    "gui"
+    "gui",
+    "db",
+    "management"
   ],
-  "license": "Apache-2.0"
+  "author": "Javier Leandro Arancibia <arancibiajav@gmail.com>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/javimosch/adminer-node.git"
+  },
+  "homepage": "https://github.com/javimosch/adminer-node#readme",
+  "bugs": {
+    "url": "https://github.com/javimosch/adminer-node/issues"
+  }
 }

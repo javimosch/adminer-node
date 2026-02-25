@@ -1,0 +1,33 @@
+{
+  "name": "adminer-node",
+  "version": "1.0.0",
+  "description": "Database management UI for MySQL, PostgreSQL and SQLite — runnable via npx",
+  "type": "module",
+  "bin": {
+    "adminer-node": "./bin/adminer-node.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "public/"
+  ],
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "mysql2": "^3.6.0",
+    "open": "^10.0.0",
+    "pg": "^8.11.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "adminer",
+    "database",
+    "mysql",
+    "postgresql",
+    "sqlite",
+    "admin",
+    "gui"
+  ],
+  "license": "Apache-2.0"
+}

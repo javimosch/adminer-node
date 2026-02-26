@@ -6,6 +6,7 @@ export const store = reactive({
   // Connection state
   authenticated: false,
   conn: null,          // { driver, server, username, db }
+  connId: null,        // id of the active saved connection preset (if any)
   csrfToken: '',
   driverConfig: null,  // { jush, types, operators, functions, grouping, editFunctions }
   serverInfo: null,
@@ -21,6 +22,7 @@ export const store = reactive({
   setAuth(payload) {
     this.authenticated = true;
     this.conn = payload.conn;
+    this.connId = payload.connId || null;
     this.csrfToken = payload.csrfToken;
     this.driverConfig = payload.driverConfig;
     this.serverInfo = payload.serverInfo;
@@ -30,6 +32,7 @@ export const store = reactive({
   clearAuth() {
     this.authenticated = false;
     this.conn = null;
+    this.connId = null;
     this.csrfToken = '';
     this.driverConfig = null;
     this.serverInfo = null;

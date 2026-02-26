@@ -52,6 +52,8 @@ export const store = reactive({
     setTimeout(() => this.dismissMessage(id), 5000);
   },
 
+  // Aliases — addMessage is the canonical name used in views
+  addMessage(text, type = 'info') { this.flash(text, type); },
   success(text) { this.flash(text, 'success'); },
   error(text)   { this.flash(text, 'error'); },
   info(text)    { this.flash(text, 'info'); },

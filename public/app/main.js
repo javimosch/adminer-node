@@ -22,6 +22,7 @@ import VariablesView from './views/VariablesView.js';
 import CreateTableView from './views/CreateTableView.js';
 
 // Register routes
+addRoute('/',                               HomeView);   // root → home (saved connections)
 addRoute('/login',                          LoginView);
 addRoute('/home',                           HomeView);
 addRoute('/db',                             DatabaseView);        // create db
@@ -53,8 +54,8 @@ const App = {
         currentRoute.value = match.component;
         routeParams.value = match.params;
       } else {
-        // Redirect to login or home based on auth state
-        navigate(store.authenticated ? '/home' : '/login');
+        // Unmatched route — go home (which shows connections or login button)
+        navigate('/');
       }
     }
 
@@ -101,4 +102,5 @@ const App = {
 const app = createApp(App);
 app.provide('store', store);
 app.provide('navigate', navigate);
+app.provide('api', api);
 app.mount('#app');

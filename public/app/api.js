@@ -107,4 +107,14 @@ export const api = {
   variables: ()            => request('GET', '/api/variables'),
   processList: ()          => request('GET', '/api/processlist'),
   killProcess: (id)        => request('DELETE', `/api/processlist/${encodeURIComponent(id)}`),
+
+  // Saved connections (presets defined in server config)
+  connections: ()          => request('GET', '/api/connections'),
+  autoConnect: (id)        => request('POST', `/api/connections/${encodeURIComponent(id)}/connect`),
+
+  // Generic helpers for views that call api.get() / api.post() directly
+  get:  (path, params)     => request('GET',  params ? path + buildQs(params) : path),
+  post: (path, body)       => request('POST', path, body),
+  put:  (path, body)       => request('PUT',  path, body),
+  del:  (path, body)       => request('DELETE', path, body),
 };

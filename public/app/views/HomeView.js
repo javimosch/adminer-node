@@ -17,26 +17,23 @@ export default {
     const loadingConns = ref(true);
 
     onMounted(async () => {
-      try {
-        const data = await api.get('/api/connections');
-        connections.value = data.connections || [];
-      } catch { /* no presets — that's fine */ }
+      const { data } = await api.connections();
+      connections.value = (data?.connections) || [];
       loadingConns.value = false;
     });
 
     async function autoConnect(conn) {
       if (connecting.value) return;
       connecting.value = conn.id;
-      try {
-        const result = await api.post(`/api/connections/${conn.id}/connect`);
-        store.setAuth(result);
+      const { data, error } = await api.autoConnect(conn.id);
+      if (error) {
+        store.addMessage(error || 'Connection failed', 'error');
+      } else {
+        store.setAuth(data);
         store.addMessage(`Connected to ${conn.label}`, 'success');
         navigate('/databases');
-      } catch (e) {
-        store.addMessage(e.message || 'Connection failed', 'error');
-      } finally {
-        connecting.value = null;
       }
+      connecting.value = null;
     }
 
     function goLogin() { navigate('/login'); }

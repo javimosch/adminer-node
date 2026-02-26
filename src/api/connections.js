@@ -30,13 +30,13 @@ export function registerConnectionRoutes(config) {
 
     if (result.error) return res.error(result.error, 401, { code: 'AUTH_ERROR' });
 
+    // Return the same shape as /api/auth/login so the frontend store.setAuth() works identically
     res.json({
-      ok: true,
-      label:    conn.label || conn.driver,
-      driver:   conn.driver,
-      server:   conn.server,
-      username: conn.username || '',
-      db:       conn.db       || '',
+      csrfToken:    result.csrfToken,
+      conn:         result.conn,
+      driverConfig: result.driverConfig,
+      serverInfo:   result.serverInfo,
+      label:        conn.label || conn.driver,
     });
   });
 }

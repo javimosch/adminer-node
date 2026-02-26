@@ -1,0 +1,38 @@
+services:
+  adminer-node:
+    image: javimosch/adminer-node:latest
+    container_name: adminer-node
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+    restart: unless-stopped
+
+  # Uncomment to include a local MySQL/MariaDB for testing
+  # mariadb:
+  #   image: mariadb:11
+  #   container_name: adminer-mariadb
+  #   environment:
+  #     MARIADB_ROOT_PASSWORD: secret
+  #     MARIADB_DATABASE: mydb
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - mariadb_data:/var/lib/mysql
+
+  # Uncomment to include a local PostgreSQL for testing
+  # postgres:
+  #   image: postgres:16
+  #   container_name: adminer-postgres
+  #   environment:
+  #     POSTGRES_PASSWORD: secret
+  #     POSTGRES_DB: mydb
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+# volumes:
+#   mariadb_data:
+#   postgres_data:

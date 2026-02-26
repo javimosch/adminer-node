@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>adminer-node — Documentation</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗄️</text></svg>" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .code-block { background: #1e1e2e; color: #cdd6f4; font-family: 'Fira Code', 'Cascadia Code', monospace; }
+    .keyword { color: #cba6f7; }
+    .string  { color: #a6e3a1; }
+    .comment { color: #585b70; }
+    .flag    { color: #89b4fa; }
+    .sidebar-link.active { background: rgba(99,102,241,0.15); color: #818cf8; font-weight: 600; }
+    .prose h2 { font-size: 1.5rem; font-weight: 700; margin: 2.5rem 0 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem; }
+    .prose h3 { font-size: 1.15rem; font-weight: 600; margin: 2rem 0 0.75rem; }
+    .prose p  { margin: 0.75rem 0; line-height: 1.75; color: rgba(255,255,255,0.75); }
+    .prose ul { margin: 0.5rem 0 0.75rem 1.5rem; list-style: disc; }
+    .prose ul li { margin: 0.3rem 0; color: rgba(255,255,255,0.75); }
+    .prose code { background: rgba(255,255,255,0.08); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85em; }
+    .prose table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .prose th { background: rgba(99,102,241,0.15); padding: 0.6rem 1rem; text-align: left; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .prose td { padding: 0.6rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
+  </style>
+</head>
+<body class="bg-base-100 text-base-content" data-theme="dark">
+
+  <!-- Navbar -->
+  <nav class="navbar fixed top-0 z-50 bg-base-100/90 backdrop-blur border-b border-base-300 px-6">
+    <div class="flex-1">
+      <a href="index.html" class="text-xl font-bold text-primary">🗄️ adminer-node</a>
+      <span class="ml-3 badge badge-primary badge-outline text-xs">Docs</span>
+    </div>
+    <div class="flex-none gap-2">
+      <a href="index.html" class="btn btn-ghost btn-sm">Home</a>
+      <a href="https://github.com/javimosch/adminer-node" target="_blank" class="btn btn-ghost btn-sm">GitHub</a>
+      <a href="https://www.npmjs.com/package/adminer-node" target="_blank" class="btn btn-primary btn-sm">npm</a>
+    </div>
+  </nav>
+
+  <div class="flex pt-16 min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="hidden lg:block w-64 shrink-0 bg-base-200 border-r border-base-300 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-8 px-4">
+      <ul class="menu menu-sm gap-1">
+        <li class="menu-title">Getting Started</li>
+        <li><a href="#quickstart" class="sidebar-link">Quick Start</a></li>
+        <li><a href="#options"    class="sidebar-link">CLI Options</a></li>
+        <li><a href="#install"    class="sidebar-link">Installation</a></li>
+
+        <li class="menu-title mt-4">Docker</li>
+        <li><a href="#docker-run"     class="sidebar-link">Docker Run</a></li>
+        <li><a href="#docker-compose" class="sidebar-link">Docker Compose</a></li>
+        <li><a href="#docker-build"   class="sidebar-link">Build &amp; Push</a></li>
+        <li><a href="#docker-env"     class="sidebar-link">Environment Variables</a></li>
+
+        <li class="menu-title mt-4">Databases</li>
+        <li><a href="#mysql"    class="sidebar-link">MySQL / MariaDB</a></li>
+        <li><a href="#postgres" class="sidebar-link">PostgreSQL</a></li>
+        <li><a href="#sqlite"   class="sidebar-link">SQLite</a></li>
+
+        <li class="menu-title mt-4">Features</li>
+        <li><a href="#sql-editor" class="sidebar-link">SQL Editor</a></li>
+        <li><a href="#browse"     class="sidebar-link">Table Browser</a></li>
+        <li><a href="#edit"       class="sidebar-link">Row Editor</a></li>
+        <li><a href="#dump"       class="sidebar-link">Export / Dump</a></li>
+        <li><a href="#security"   class="sidebar-link">Security</a></li>
+
+        <li class="menu-title mt-4">API</li>
+        <li><a href="#api-ref" class="sidebar-link">REST API Reference</a></li>
+
+        <li class="menu-title mt-4">Development</li>
+        <li><a href="#dev-setup"  class="sidebar-link">Dev Setup</a></li>
+        <li><a href="#arch"       class="sidebar-link">Architecture</a></li>
+        <li><a href="#contribute" class="sidebar-link">Contributing</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 max-w-4xl mx-auto px-6 py-12 prose">
+
+      <h1 class="text-4xl font-extrabold mb-2">Documentation</h1>
+      <p class="text-base-content/50 mb-12 text-lg">Everything you need to run, configure and contribute to adminer-node.</p>
+
+      <!-- ─── Getting Started ─── -->
+      <h2 id="quickstart">Quick Start</h2>
+      <p>No installation required. Run directly with <code>npx</code>:</p>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="comment"># Runs on http://127.0.0.1:8080 and opens your browser</span></p>
+        <p><span class="keyword">npx</span> <span class="string">adminer-node</span></p>
+      </div>
+
+      <h2 id="options">CLI Options</h2>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="keyword">npx</span> <span class="string">adminer-node</span> [options]</p>
+        <p class="mt-3"><span class="flag">--port</span>   &lt;port&gt;    Port to listen on (default: <span class="string">8080</span>)</p>
+        <p><span class="flag">--host</span>   &lt;host&gt;    Host to bind to (default: <span class="string">127.0.0.1</span>)</p>
+        <p><span class="flag">--no-open</span>           Do not open browser automatically</p>
+        <p><span class="flag">--driver</span> &lt;driver&gt;  Pre-select driver: <span class="string">mysql</span> | <span class="string">pgsql</span> | <span class="string">sqlite</span></p>
+        <p><span class="flag">--help</span>              Show help and exit</p>
+      </div>
+
+      <h2 id="install">Installation</h2>
+      <h3>npx (recommended)</h3>
+      <div class="code-block rounded-xl p-5 my-4 text-sm">
+        <p><span class="keyword">npx</span> <span class="string">adminer-node</span></p>
+      </div>
+      <h3>Global install</h3>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="keyword">npm</span> install -g adminer-node</p>
+        <p><span class="keyword">adminer-node</span></p>
+      </div>
+      <h3>Local project</h3>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="keyword">npm</span> install adminer-node</p>
+        <p><span class="keyword">npx</span> adminer-node</p>
+      </div>
+
+      <!-- ─── Docker ─── -->
+      <h2 id="docker-run">Docker — Quick Run</h2>
+      <div class="code-block rounded-xl p-5 my-4 text-sm">
+        <p><span class="keyword">docker</span> run -p 8080:8080 <span class="string">javimosch/adminer-node:latest</span></p>
+      </div>
+      <p>Open <code>http://localhost:8080</code> in your browser.</p>
+
+      <h2 id="docker-compose">Docker Compose</h2>
+      <p>Save as <code>compose.yml</code> and run <code>docker compose up</code>:</p>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="keyword">services</span>:</p>
+        <p>  <span class="flag">adminer-node</span>:</p>
+        <p>    <span class="keyword">image</span>: <span class="string">javimosch/adminer-node:latest</span></p>
+        <p>    <span class="keyword">ports</span>:</p>
+        <p>      - <span class="string">"8080:8080"</span></p>
+        <p>    <span class="keyword">environment</span>:</p>
+        <p>      - <span class="string">PORT=8080</span></p>
+        <p>      - <span class="string">HOST=0.0.0.0</span></p>
+        <p>    <span class="keyword">restart</span>: unless-stopped</p>
+      </div>
+      <p>To also spin up a local MariaDB:</p>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="keyword">services</span>:</p>
+        <p>  <span class="flag">adminer-node</span>:</p>
+        <p>    <span class="keyword">image</span>: <span class="string">javimosch/adminer-node:latest</span></p>
+        <p>    <span class="keyword">ports</span>: [<span class="string">"8080:8080"</span>]</p>
+        <p>    <span class="keyword">environment</span>: { HOST: <span class="string">0.0.0.0</span>, PORT: <span class="string">8080</span> }</p>
+        <p>  <span class="flag">mariadb</span>:</p>
+        <p>    <span class="keyword">image</span>: <span class="string">mariadb:11</span></p>
+        <p>    <span class="keyword">environment</span>:</p>
+        <p>      MARIADB_ROOT_PASSWORD: <span class="string">secret</span></p>
+        <p>      MARIADB_DATABASE: <span class="string">mydb</span></p>
+        <p>    <span class="keyword">ports</span>: [<span class="string">"3306:3306"</span>]</p>
+      </div>
+
+      <h2 id="docker-build">Build &amp; Push (maintainers)</h2>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="comment"># Build + push to Docker Hub in one step</span></p>
+        <p><span class="keyword">npm</span> run deploy</p>
+        <p class="mt-3"><span class="comment"># Individual steps</span></p>
+        <p><span class="keyword">npm</span> run docker:build</p>
+        <p><span class="keyword">npm</span> run docker:push</p>
+        <p><span class="keyword">npm</span> run docker:run   <span class="comment"># quick local test</span></p>
+      </div>
+
+      <h2 id="docker-env">Environment Variables</h2>
+      <table>
+        <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>PORT</code></td><td><code>8080</code></td><td>HTTP port the server listens on</td></tr>
+          <tr><td><code>HOST</code></td><td><code>127.0.0.1</code></td><td>Host/interface to bind (<code>0.0.0.0</code> for Docker)</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ─── Databases ─── -->
+      <h2 id="mysql">MySQL / MariaDB</h2>
+      <p>Select <strong>MySQL / MariaDB</strong> on the login screen. Connection fields:</p>
+      <ul>
+        <li><strong>Server</strong> — hostname or IP (e.g. <code>127.0.0.1</code> or <code>mariadb</code> in Docker Compose)</li>
+        <li><strong>Username</strong> — database user (e.g. <code>root</code>)</li>
+        <li><strong>Password</strong> — database password</li>
+        <li><strong>Database</strong> — optional, leave blank to browse all databases</li>
+      </ul>
+      <p>Supported features: browse, edit, create table, alter table, indexes, foreign keys, SQL editor, export dump, variables, process list.</p>
+
+      <h2 id="postgres">PostgreSQL</h2>
+      <p>Select <strong>PostgreSQL</strong> on the login screen. Connection fields:</p>
+      <ul>
+        <li><strong>Server</strong> — <code>hostname:port</code> (default port <code>5432</code>)</li>
+        <li><strong>Username</strong> — database role</li>
+        <li><strong>Password</strong> — role password</li>
+        <li><strong>Database</strong> — PostgreSQL database name</li>
+      </ul>
+      <p>Supported features: schemas, sequences, materialized views, custom types, extensions.</p>
+
+      <h2 id="sqlite">SQLite</h2>
+      <p>Select <strong>SQLite</strong> on the login screen. The <strong>Server</strong> field is the file path:</p>
+      <ul>
+        <li><code>/path/to/database.db</code> — open an existing file</li>
+        <li><code>:memory:</code> — create a temporary in-memory database</li>
+      </ul>
+      <p>Username and password are not required for SQLite — leave them blank.</p>
+
+      <!-- ─── Features ─── -->
+      <h2 id="sql-editor">SQL Editor</h2>
+      <p>Navigate to any database and click <strong>SQL Command</strong>. The editor supports:</p>
+      <ul>
+        <li>Multi-statement execution (semicolon-separated)</li>
+        <li>Result tables for <code>SELECT</code> queries</li>
+        <li>Affected row count for <code>INSERT</code> / <code>UPDATE</code> / <code>DELETE</code></li>
+        <li>Error messages with the failing statement highlighted</li>
+      </ul>
+
+      <h2 id="browse">Table Browser</h2>
+      <p>Click a table name in the sidebar to browse its data. Features:</p>
+      <ul>
+        <li>Paginated rows (configurable page size)</li>
+        <li>Column sorting (click header)</li>
+        <li>Search / filter rows</li>
+        <li>Edit / delete individual rows</li>
+        <li>Insert new rows</li>
+      </ul>
+
+      <h2 id="edit">Row Editor</h2>
+      <p>Click <strong>Edit</strong> on any row to open the row editor. Inputs are type-aware:</p>
+      <ul>
+        <li><code>ENUM</code> / <code>SET</code> — rendered as <code>&lt;select&gt;</code></li>
+        <li><code>TEXT</code> / <code>BLOB</code> — rendered as <code>&lt;textarea&gt;</code></li>
+        <li><code>DATE</code> / <code>DATETIME</code> — rendered as date/datetime inputs</li>
+        <li><code>BOOLEAN</code> — rendered as checkbox</li>
+        <li>NULL toggle on every nullable field</li>
+      </ul>
+
+      <h2 id="dump">Export / Dump</h2>
+      <p>Navigate to a database or table and click <strong>Export</strong>. Options:</p>
+      <ul>
+        <li><strong>Format</strong> — SQL (with CREATE TABLE + INSERT) or CSV</li>
+        <li><strong>Scope</strong> — full database or individual tables</li>
+        <li><strong>Data style</strong> — INSERT, or structure-only (no data)</li>
+      </ul>
+
+      <h2 id="security">Security</h2>
+      <ul>
+        <li><strong>AES-256-GCM</strong> — session passwords are encrypted server-side; never stored in plaintext</li>
+        <li><strong>CSRF protection</strong> — every mutating request requires a token verified server-side</li>
+        <li><strong>Brute-force protection</strong> — IP-based rate limiting on login attempts</li>
+        <li><strong>Security headers</strong> — <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy</code>, <code>Content-Security-Policy</code></li>
+        <li><strong>Local-only by default</strong> — server binds to <code>127.0.0.1</code>; set <code>HOST=0.0.0.0</code> explicitly for Docker/remote access</li>
+      </ul>
+
+      <!-- ─── API ─── -->
+      <h2 id="api-ref">REST API Reference</h2>
+      <p>All API routes are under <code>/api/</code>. Authenticated routes require a valid session cookie.</p>
+      <table>
+        <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>GET</td><td><code>/api/drivers</code></td><td>List available drivers</td></tr>
+          <tr><td>GET</td><td><code>/api/status</code></td><td>Server status &amp; auth state</td></tr>
+          <tr><td>POST</td><td><code>/api/auth/login</code></td><td>Login (sets session cookie)</td></tr>
+          <tr><td>POST</td><td><code>/api/auth/logout</code></td><td>Logout (clears session)</td></tr>
+          <tr><td>GET</td><td><code>/api/databases</code></td><td>List databases</td></tr>
+          <tr><td>POST</td><td><code>/api/databases</code></td><td>Create database</td></tr>
+          <tr><td>DELETE</td><td><code>/api/databases/:db</code></td><td>Drop database</td></tr>
+          <tr><td>GET</td><td><code>/api/tables/:db</code></td><td>List tables in a database</td></tr>
+          <tr><td>GET</td><td><code>/api/tables/:db/:table/structure</code></td><td>Table fields, indexes, FKs</td></tr>
+          <tr><td>POST</td><td><code>/api/tables/:db</code></td><td>Create table</td></tr>
+          <tr><td>DELETE</td><td><code>/api/tables/:db/:table</code></td><td>Drop table</td></tr>
+          <tr><td>GET</td><td><code>/api/select/:db/:table</code></td><td>Browse rows (paginated)</td></tr>
+          <tr><td>POST</td><td><code>/api/edit/:db/:table</code></td><td>Insert row</td></tr>
+          <tr><td>PUT</td><td><code>/api/edit/:db/:table</code></td><td>Update row</td></tr>
+          <tr><td>DELETE</td><td><code>/api/edit/:db/:table</code></td><td>Delete row</td></tr>
+          <tr><td>POST</td><td><code>/api/sql/:db</code></td><td>Execute SQL statement(s)</td></tr>
+          <tr><td>GET</td><td><code>/api/dump/:db</code></td><td>Export SQL dump</td></tr>
+          <tr><td>GET</td><td><code>/api/variables</code></td><td>Server variables</td></tr>
+          <tr><td>GET</td><td><code>/api/users</code></td><td>List database users (MySQL)</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ─── Development ─── -->
+      <h2 id="dev-setup">Dev Setup</h2>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="keyword">git</span> clone https://github.com/javimosch/adminer-node.git</p>
+        <p><span class="keyword">cd</span> adminer-node</p>
+        <p><span class="keyword">npm</span> install</p>
+        <p><span class="keyword">npm</span> run dev   <span class="comment"># starts with --watch for hot reload</span></p>
+      </div>
+
+      <h2 id="arch">Architecture</h2>
+      <p>adminer-node is a full-stack Node.js application with zero framework dependencies:</p>
+      <ul>
+        <li><strong>Server</strong> — <code>src/server.js</code> uses Node.js built-in <code>http</code> module with a custom router (<code>src/router.js</code>)</li>
+        <li><strong>Auth</strong> — <code>src/auth.js</code> handles sessions, CSRF tokens and brute-force protection</li>
+        <li><strong>Drivers</strong> — <code>src/drivers/{mysql,pgsql,sqlite}.js</code> implement a common <code>BaseDriver</code> interface</li>
+        <li><strong>API handlers</strong> — <code>src/api/*.js</code> one file per feature domain</li>
+        <li><strong>Frontend</strong> — <code>public/app/</code> — Vue 3 components loaded via CDN importmap, hash-based routing, no bundler</li>
+        <li><strong>Styling</strong> — Tailwind CSS + DaisyUI via CDN, dark theme by default</li>
+      </ul>
+      <p>Every file is kept under <strong>500 lines of code</strong> for maintainability.</p>
+
+      <h2 id="contribute">Contributing</h2>
+      <p>Contributions are welcome! Please open an issue or pull request on <a href="https://github.com/javimosch/adminer-node" class="link link-primary" target="_blank">GitHub</a>.</p>
+      <ul>
+        <li>Follow the existing file structure and 500 LOC limit per file</li>
+        <li>Add new drivers in <code>src/drivers/</code> extending <code>BaseDriver</code></li>
+        <li>Add new API routes in <code>src/api/</code> and register in <code>src/server.js</code></li>
+        <li>Add new views in <code>public/app/views/</code> and register in <code>public/app/router.js</code></li>
+      </ul>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer footer-center p-8 bg-base-300 text-base-content/60 text-sm">
+    <div>
+      <p>
+        <strong class="text-base-content">adminer-node</strong> —
+        Developed by <a href="https://intrane.fr" target="_blank" class="link link-primary font-semibold">intrane.fr</a>
+        (Javier Leandro Arancibia)
+      </p>
+      <p class="mt-1">
+        Licensed under Apache-2.0 ·
+        <a href="https://github.com/javimosch/adminer-node" target="_blank" class="link">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/adminer-node" target="_blank" class="link">npm</a> ·
+        <a href="https://hub.docker.com/r/javimosch/adminer-node" target="_blank" class="link">Docker Hub</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Sidebar active link highlighting -->
+  <script>
+    const links = document.querySelectorAll('.sidebar-link');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          links.forEach(l => l.classList.remove('active'));
+          const match = document.querySelector(`.sidebar-link[href="#${e.target.id}"]`);
+          if (match) match.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    document.querySelectorAll('main h2[id]').forEach(h => observer.observe(h));
+  </script>
+</body>
+</html>

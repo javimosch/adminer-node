@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>adminer-node — Lightweight Database Management UI</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗄️</text></svg>" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .hero-gradient { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #1e40af 100%); }
+    .feature-card:hover { transform: translateY(-4px); transition: transform 0.2s ease; }
+    .code-block { background: #1e1e2e; color: #cdd6f4; font-family: 'Fira Code', 'Cascadia Code', monospace; }
+    .keyword { color: #cba6f7; }
+    .string  { color: #a6e3a1; }
+    .comment { color: #585b70; }
+  </style>
+</head>
+<body class="bg-base-100 text-base-content" data-theme="dark">
+
+  <!-- Navbar -->
+  <nav class="navbar fixed top-0 z-50 bg-base-100/90 backdrop-blur border-b border-base-300 px-6">
+    <div class="flex-1">
+      <span class="text-xl font-bold text-primary">🗄️ adminer-node</span>
+      <span class="ml-3 badge badge-primary badge-outline text-xs">v1.2+</span>
+    </div>
+    <div class="flex-none gap-2">
+      <a href="docs.html" class="btn btn-ghost btn-sm">Docs</a>
+      <a href="https://github.com/javimosch/adminer-node" target="_blank" class="btn btn-ghost btn-sm">GitHub</a>
+      <a href="https://www.npmjs.com/package/adminer-node" target="_blank" class="btn btn-primary btn-sm">npm</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero-gradient min-h-screen flex items-center justify-center pt-16">
+    <div class="text-center px-6 max-w-4xl mx-auto">
+      <div class="mb-6 text-7xl">🗄️</div>
+      <h1 class="text-5xl md:text-6xl font-extrabold text-white mb-4 leading-tight">
+        adminer-node
+      </h1>
+      <p class="text-xl md:text-2xl text-indigo-200 mb-4 font-light">
+        Lightweight database management UI for MySQL, MariaDB, PostgreSQL &amp; SQLite
+      </p>
+      <p class="text-base text-indigo-300 mb-10">
+        Inspired by AdminerEvo. Zero build step. Runs anywhere Node.js runs.
+      </p>
+
+      <!-- Quick start terminal -->
+      <div class="code-block rounded-2xl p-6 text-left max-w-lg mx-auto mb-10 shadow-2xl">
+        <div class="flex gap-2 mb-4">
+          <span class="w-3 h-3 rounded-full bg-red-500"></span>
+          <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+          <span class="w-3 h-3 rounded-full bg-green-500"></span>
+        </div>
+        <p class="text-sm text-indigo-300 mb-2"><span class="comment"># No install needed</span></p>
+        <p class="text-lg"><span class="keyword">npx</span> <span class="string">adminer-node</span></p>
+        <p class="text-sm text-indigo-400 mt-3">↗ Opening http://127.0.0.1:8080 ...</p>
+      </div>
+
+      <div class="flex flex-wrap gap-4 justify-center">
+        <a href="docs.html" class="btn btn-primary btn-lg">Get Started →</a>
+        <a href="https://github.com/javimosch/adminer-node" target="_blank" class="btn btn-outline btn-lg text-white border-white hover:bg-white hover:text-indigo-900">
+          View on GitHub
+        </a>
+        <a href="https://hub.docker.com/r/javimosch/adminer-node" target="_blank" class="btn btn-outline btn-lg text-white border-white hover:bg-white hover:text-indigo-900">
+          🐳 Docker Hub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="py-24 px-6 bg-base-200" id="features">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-3xl font-bold text-center mb-4">Everything you need</h2>
+      <p class="text-center text-base-content/60 mb-14 text-lg">No bloat. No dependencies you don't need. Just works.</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div class="card bg-base-100 shadow feature-card">
+          <div class="card-body">
+            <div class="text-3xl mb-2">🐬</div>
+            <h3 class="card-title">MySQL &amp; MariaDB</h3>
+            <p class="text-base-content/70">Browse databases, manage tables, run SQL, edit rows, indexes &amp; foreign keys, export dumps.</p>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow feature-card">
+          <div class="card-body">
+            <div class="text-3xl mb-2">🐘</div>
+            <h3 class="card-title">PostgreSQL</h3>
+            <p class="text-base-content/70">Full schema support including sequences, materialized views and custom types.</p>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow feature-card">
+          <div class="card-body">
+            <div class="text-3xl mb-2">📦</div>
+            <h3 class="card-title">SQLite</h3>
+            <p class="text-base-content/70">File-based and in-memory databases. Great for local dev and embedded apps.</p>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow feature-card">
+          <div class="card-body">
+            <div class="text-3xl mb-2">⚡</div>
+            <h3 class="card-title">SQL Editor</h3>
+            <p class="text-base-content/70">Multi-statement SQL execution with live result tables and query history.</p>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow feature-card">
+          <div class="card-body">
+            <div class="text-3xl mb-2">🔒</div>
+            <h3 class="card-title">Secure by Default</h3>
+            <p class="text-base-content/70">AES-256-GCM encrypted sessions, CSRF protection, brute-force rate limiting.</p>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow feature-card">
+          <div class="card-body">
+            <div class="text-3xl mb-2">🚀</div>
+            <h3 class="card-title">Zero Setup</h3>
+            <p class="text-base-content/70">Pure Node.js HTTP server, Vue 3 via CDN. No build step, no Webpack, no config files.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Install methods -->
+  <section class="py-24 px-6 bg-base-100" id="install">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl font-bold text-center mb-14">Three ways to run</h2>
+      <div class="grid md:grid-cols-3 gap-6">
+
+        <div class="card bg-base-200 shadow">
+          <div class="card-body">
+            <h3 class="card-title text-primary">npx</h3>
+            <p class="text-sm text-base-content/60 mb-4">No install. Runs anywhere.</p>
+            <div class="code-block rounded-lg p-4 text-sm">
+              <span class="keyword">npx</span> <span class="string">adminer-node</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-200 shadow">
+          <div class="card-body">
+            <h3 class="card-title text-primary">npm</h3>
+            <p class="text-sm text-base-content/60 mb-4">Install globally.</p>
+            <div class="code-block rounded-lg p-4 text-sm">
+              <p><span class="keyword">npm</span> i -g adminer-node</p>
+              <p class="mt-2"><span class="keyword">adminer-node</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-200 shadow">
+          <div class="card-body">
+            <h3 class="card-title text-primary">🐳 Docker</h3>
+            <p class="text-sm text-base-content/60 mb-4">Containerized, ready to deploy.</p>
+            <div class="code-block rounded-lg p-4 text-sm">
+              <span class="keyword">docker</span> run -p 8080:8080 <span class="string">javimosch/adminer-node</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech stack -->
+  <section class="py-24 px-6 bg-base-200" id="tech">
+    <div class="max-w-3xl mx-auto text-center">
+      <h2 class="text-3xl font-bold mb-4">Tech Stack</h2>
+      <p class="text-base-content/60 mb-12">Minimal, modern, dependency-free where it counts.</p>
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full text-left">
+          <thead>
+            <tr><th>Layer</th><th>Technology</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Server</td><td>Node.js built-in <code class="badge badge-ghost">http</code> — zero framework</td></tr>
+            <tr><td>Frontend</td><td>Vue 3 via CDN — no build step</td></tr>
+            <tr><td>Styling</td><td>Tailwind CSS + DaisyUI via CDN</td></tr>
+            <tr><td>MySQL / MariaDB</td><td><code class="badge badge-ghost">mysql2</code></td></tr>
+            <tr><td>PostgreSQL</td><td><code class="badge badge-ghost">pg</code></td></tr>
+            <tr><td>SQLite</td><td><code class="badge badge-ghost">better-sqlite3</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="hero-gradient py-24 px-6 text-center">
+    <h2 class="text-3xl font-bold text-white mb-4">Ready to manage your database?</h2>
+    <p class="text-indigo-200 mb-8 text-lg">One command. No configuration. Works now.</p>
+    <div class="code-block rounded-2xl p-6 max-w-sm mx-auto mb-8 shadow-2xl">
+      <p class="text-lg"><span class="keyword">npx</span> <span class="string">adminer-node</span></p>
+    </div>
+    <a href="docs.html" class="btn btn-primary btn-lg">Read the Docs →</a>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer footer-center p-8 bg-base-300 text-base-content/60 text-sm">
+    <div>
+      <p>
+        <strong class="text-base-content">adminer-node</strong> —
+        Developed by <a href="https://intrane.fr" target="_blank" class="link link-primary font-semibold">intrane.fr</a>
+        (Javier Leandro Arancibia)
+      </p>
+      <p class="mt-1">
+        Licensed under Apache-2.0 ·
+        <a href="https://github.com/javimosch/adminer-node" target="_blank" class="link">GitHub</a> ·
+        <a href="https://www.npmjs.com/package/adminer-node" target="_blank" class="link">npm</a> ·
+        <a href="https://hub.docker.com/r/javimosch/adminer-node" target="_blank" class="link">Docker Hub</a>
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>

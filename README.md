@@ -2,6 +2,8 @@
 
 A lightweight database management UI for **MySQL**, **MariaDB**, **PostgreSQL** and **SQLite** — inspired by [AdminerEvo](https://github.com/adminerevo/adminerevo), built with Node.js, Vue 3, Tailwind CSS and DaisyUI.
 
+Developed by **[intrane.fr](https://intrane.fr)** (Javier Leandro Arancibia).
+
 ## Quick Start
 
 ```bash
@@ -47,10 +49,62 @@ Options:
 | PostgreSQL | `pg` |
 | SQLite | `better-sqlite3` |
 
+## Docker
+
+### Run with Docker
+
+```bash
+docker run -p 8080:8080 javimosch/adminer-node:latest
+```
+
+Then open `http://localhost:8080` in your browser.
+
+### Docker Compose
+
+Save as `compose.yml` and run `docker compose up`:
+
+```yaml
+services:
+  adminer-node:
+    image: javimosch/adminer-node:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+    restart: unless-stopped
+```
+
+Or clone the repo and use the included `compose.yml`:
+
+```bash
+git clone https://github.com/javimosch/adminer-node.git
+cd adminer-node
+docker compose up
+```
+
+### Build & Push (maintainers)
+
+```bash
+npm run deploy        # build + push to javimosch/adminer-node:latest
+npm run docker:build  # build only
+npm run docker:push   # push only
+npm run docker:run    # quick local run
+```
+
+## Development
+
+```bash
+git clone https://github.com/javimosch/adminer-node.git
+cd adminer-node
+npm install
+npm run dev           # starts with --watch
+```
+
 ## Requirements
 
 - Node.js >= 18
 
 ## License
 
-Apache-2.0 © [Javier Leandro Arancibia](https://github.com/javimosch)
+Apache-2.0 © [Javier Leandro Arancibia](https://github.com/javimosch) — [intrane.fr](https://intrane.fr)

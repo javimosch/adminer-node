@@ -13,6 +13,14 @@
     "README.md",
     "LICENSE"
   ],
+  "scripts": {
+    "start": "node bin/adminer-node.js",
+    "dev": "node --watch bin/adminer-node.js --no-open",
+    "docker:build": "docker build -t javimosch/adminer-node:latest .",
+    "docker:push": "docker push javimosch/adminer-node:latest",
+    "docker:run": "docker run --rm -p 8080:8080 javimosch/adminer-node:latest",
+    "deploy": "npm run docker:build && npm run docker:push"
+  },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
     "mysql2": "^3.6.0",

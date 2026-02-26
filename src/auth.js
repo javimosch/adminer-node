@@ -177,9 +177,9 @@ export async function authMiddleware(req, res, config) {
   if (pathname.startsWith('/app/')) return;
   // Non-API paths are SPA routes — serve shell without auth check
   if (!pathname.startsWith('/api/')) return;
-  // Saved connections list and auto-connect are public (password never leaves server)
+  // Saved connections endpoints are public (passwords never leave server)
   if (pathname === '/api/connections') return;
-  if (pathname.startsWith('/api/connections/') && pathname.endsWith('/connect')) return;
+  if (pathname.startsWith('/api/connections/')) return;
 
   const session = req.session;
   const key = session?.currentConn;

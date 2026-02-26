@@ -16,8 +16,8 @@ export default {
       const crumbs = [];
       const conn = store.conn;
       if (conn) {
-        crumbs.push({ label: conn.driver.toUpperCase(), path: '/home' });
-        if (conn.server) crumbs.push({ label: conn.server, path: '/home' });
+        crumbs.push({ label: conn.driver.toUpperCase(), path: '/databases' });
+        if (conn.server) crumbs.push({ label: conn.server, path: '/databases' });
         if (props.params.db) crumbs.push({ label: props.params.db, path: `/db/${encodeURIComponent(props.params.db)}` });
         if (props.params.table) crumbs.push({ label: props.params.table, path: `/db/${encodeURIComponent(props.params.db)}/table/${encodeURIComponent(props.params.table)}` });
       }

@@ -24,6 +24,7 @@ import { registerForeignRoutes } from './api/foreign.js';
 import { registerUserRoutes } from './api/users.js';
 import { registerVariableRoutes } from './api/variables.js';
 import { registerConnectionRoutes } from './api/connections.js';
+import { registerConfigRoutes } from './api/config.js';
 
 export async function startServer(config) {
   // Load DB drivers (may fail silently if npm package not installed)
@@ -49,6 +50,7 @@ export async function startServer(config) {
     res.json({
       version: config.version,
       authenticated: !!connInfo,
+      basicAuthEnabled: !!(config.basicAuth?.username && config.basicAuth?.password),
       conn: connInfo
         ? { driver: connInfo.driver, server: connInfo.server, username: connInfo.username, db: connInfo.db }
         : null,
@@ -70,6 +72,7 @@ export async function startServer(config) {
   registerUserRoutes();
   registerVariableRoutes();
   registerConnectionRoutes(config);
+  registerConfigRoutes(config);
 
   // ── HTTP Server ──────────────────────────────────────────────────────────
   const server = http.createServer(async (req, res) => {

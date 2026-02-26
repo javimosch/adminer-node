@@ -13,29 +13,56 @@ export default {
     const navigate = inject('navigate');
     const api      = inject('api');
 
-    const connections  = ref([]);
-    const loadingConns = ref(true);
-    const connecting   = ref(null);
+    const connections      = ref([]);
+    const loadingConns     = ref(true);
+    const connecting       = ref(null);
+    const basicAuthEnabled = ref(true); // assume true until status loaded
 
-    // Remove-connection modal state
-    const removeTarget = ref(null); // conn object to remove
+    // Remove connection modal
+    const removeTarget = ref(null);
     const removing     = ref(false);
 
+    // Basic Auth setup modal
+    const showAuthModal = ref(false);
+    const authForm      = ref({ username: 'admin', password: '', password2: '' });
+    const authError     = ref('');
+    const authSaving    = ref(false);
+    const authDone      = ref(false);
+    const authCountdown = ref(5);
+
     onMounted(async () => {
-      const { data } = await api.connections();
-      connections.value = (data?.connections) || [];
+      const [statusRes, connsRes] = await Promise.all([
+        api.get('/api/status'),
+        api.connections(),
+      ]);
+      basicAuthEnabled.value = statusRes.data?.basicAuthEnabled ?? false;
+      connections.value = connsRes.data?.connections || [];
       loadingConns.value = false;
     });
 
     async function autoConnect(conn) {
       if (connecting.value) return;
+
+      // If this connection is already active, just navigate back to it
+      if (store.authenticated && store.connId === conn.id) {
+        navigate('/databases');
+        return;
+      }
+
       connecting.value = conn.id;
+
+      // If a different connection is active, log out first
+      if (store.authenticated) {
+        await api.logout();
+        store.clearAuth();
+      }
+
       const { data, error } = await api.autoConnect(conn.id);
       if (error) {
         store.addMessage(error || 'Connection failed', 'error');
       } else {
         store.setAuth(data);
-        store.addMessage(`Connected to ${conn.label}`, 'success');
+        store.addMessage('Connected to ' + conn.label, 'success');
         navigate('/databases');
       }
       connecting.value = null;
@@ -45,29 +72,60 @@ export default {
       e.stopPropagation();
       removeTarget.value = conn;
     }
-
     async function confirmRemove() {
       if (!removeTarget.value || removing.value) return;
       removing.value = true;
-      const { error } = await api.del(`/api/connections/${encodeURIComponent(removeTarget.value.id)}`);
+      const { error } = await api.del('/api/connections/' + encodeURIComponent(removeTarget.value.id));
       if (error) {
-        store.addMessage(error || 'Failed to remove connection', 'error');
+        store.addMessage(error || 'Failed to remove', 'error');
       } else {
         connections.value = connections.value.filter(c => c.id !== removeTarget.value.id);
-        store.addMessage(`Removed "${removeTarget.value.label}"`, 'success');
+        store.addMessage('Removed "' + removeTarget.value.label + '"', 'success');
       }
       removeTarget.value = null;
       removing.value = false;
     }
-
     function cancelRemove() { removeTarget.value = null; }
+
+    function openAuthModal() {
+      authForm.value = { username: 'admin', password: '', password2: '' };
+      authError.value = '';
+      authDone.value = false;
+      authCountdown.value = 5;
+      showAuthModal.value = true;
+    }
+    function closeAuthModal() {
+      if (authDone.value) return; // don't close while counting down
+      showAuthModal.value = false;
+    }
+
+    async function saveBasicAuth() {
+      authError.value = '';
+      const { username, password, password2 } = authForm.value;
+      if (!username.trim()) { authError.value = 'Username is required'; return; }
+      if (password.length < 3) { authError.value = 'Password must be at least 3 characters'; return; }
+      if (password !== password2) { authError.value = 'Passwords do not match'; return; }
+      authSaving.value = true;
+      const { data, error } = await api.post('/api/config/basic-auth', { username: username.trim(), password });
+      authSaving.value = false;
+      if (error) { authError.value = error; return; }
+      authDone.value = true;
+      basicAuthEnabled.value = true;
+      authCountdown.value = 5;
+      const tick = setInterval(() => {
+        authCountdown.value--;
+        if (authCountdown.value <= 0) { clearInterval(tick); window.location.reload(); }
+      }, 1000);
+    }
 
     function goLogin() { navigate('/login'); }
 
     return {
-      store, connections, loadingConns, connecting,
+      store, connections, loadingConns, connecting, basicAuthEnabled,
       removeTarget, removing,
-      autoConnect, askRemove, confirmRemove, cancelRemove, goLogin,
+      showAuthModal, authForm, authError, authSaving, authDone, authCountdown,
+      autoConnect, askRemove, confirmRemove, cancelRemove,
+      openAuthModal, closeAuthModal, saveBasicAuth, goLogin,
       DRIVER_ICONS, DRIVER_LABELS,
     };
   },
@@ -75,7 +133,7 @@ export default {
     <div class="min-h-screen bg-gradient-to-br from-base-200 to-base-300 flex flex-col">
       <FlashMessage />
 
-      <!-- Remove confirmation modal -->
+      <!-- Remove connection modal -->
       <Modal
         :open="!!removeTarget"
         title="Remove saved connection"
@@ -88,93 +146,156 @@ export default {
         <p class="text-sm text-base-content/60 mt-1">This only removes it from the config file — the database itself is not affected.</p>
       </Modal>
 
-      <div class="flex-1 flex items-center justify-center p-4">
+      <!-- Basic Auth setup modal -->
+      <dialog :class="['modal', showAuthModal ? 'modal-open' : '']">
+        <div class="modal-box max-w-md">
+          <template v-if="authDone">
+            <div class="text-center py-6">
+              <div class="text-5xl mb-4">🔒</div>
+              <h3 class="text-xl font-bold mb-3 text-success">Basic Auth enabled!</h3>
+              <div class="text-sm space-y-2 text-base-content/70">
+                <p>✅ <strong>Done:</strong> Credentials saved to your config file.</p>
+                <p>🔄 <strong>Next:</strong> Page reloads in <strong>{{ authCountdown }}s</strong> — your browser will then prompt for the username &amp; password you just set.</p>
+                <p class="text-xs text-base-content/50 mt-3">All future visitors must enter these credentials before reaching adminer-node.</p>
+              </div>
+              <div class="mt-5">
+                <span class="loading loading-dots loading-md text-primary"></span>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="closeAuthModal">✕</button>
+            <h3 class="font-bold text-lg mb-1">Enable HTTP Basic Auth</h3>
+            <p class="text-sm text-base-content/60 mb-4">
+              Adds a browser-level password prompt in front of adminer-node.
+              Recommended when exposing this instance on a public or shared network.
+            </p>
+            <div v-if="authError" class="alert alert-error text-sm py-2 mb-3">
+              <span>{{ authError }}</span>
+            </div>
+            <div class="form-control mb-3">
+              <label class="label py-1"><span class="label-text font-medium">Username</span></label>
+              <input
+                v-model="authForm.username"
+                type="text"
+                class="input input-bordered input-sm"
+                placeholder="admin"
+                autocomplete="username"
+              />
+            </div>
+            <div class="form-control mb-3">
+              <label class="label py-1"><span class="label-text font-medium">Password</span></label>
+              <input
+                v-model="authForm.password"
+                type="password"
+                class="input input-bordered input-sm"
+                placeholder="At least 3 characters"
+                autocomplete="new-password"
+              />
+            </div>
+            <div class="form-control mb-5">
+              <label class="label py-1"><span class="label-text font-medium">Confirm password</span></label>
+              <input
+                v-model="authForm.password2"
+                type="password"
+                class="input input-bordered input-sm"
+                placeholder="Repeat password"
+                autocomplete="new-password"
+                @keyup.enter="saveBasicAuth"
+              />
+            </div>
+            <div class="modal-action mt-0">
+              <button class="btn btn-ghost btn-sm" @click="closeAuthModal">Cancel</button>
+              <button class="btn btn-primary btn-sm" :disabled="authSaving" @click="saveBasicAuth">
+                <span v-if="authSaving" class="loading loading-spinner loading-xs"></span>
+                Enable Basic Auth
+              </button>
+            </div>
+          </template>
+        </div>
+        <div v-if="!authDone" class="modal-backdrop" @click="closeAuthModal"></div>
+      </dialog>
+
+      <!-- Main content -->
+      <div class="flex-1 flex flex-col items-center justify-center p-6">
         <div class="w-full max-w-2xl">
 
           <!-- Header -->
           <div class="text-center mb-8">
-            <div class="text-6xl mb-3">🗄️</div>
-            <h1 class="text-3xl font-bold mb-1">adminer-node</h1>
-            <p class="text-base-content/50 text-sm">Database Management UI</p>
+            <h1 class="text-4xl font-bold tracking-tight mb-1">adminer-node</h1>
+            <p class="text-base-content/50 text-sm">Lightweight database admin UI</p>
           </div>
 
-          <!-- Loading -->
-          <template v-if="loadingConns">
-            <div class="flex justify-center py-8">
-              <span class="loading loading-spinner loading-md text-primary"></span>
+          <!-- ⚠️ No Basic Auth warning -->
+          <div v-if="!loadingConns && !basicAuthEnabled" class="alert alert-warning shadow mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div class="flex items-start gap-2 flex-1">
+              <span class="text-xl mt-0.5">⚠️</span>
+              <div>
+                <div class="font-semibold">No HTTP Basic Auth configured</div>
+                <div class="text-sm opacity-80">Anyone who can reach this URL has full access to adminer-node. Enable Basic Auth to require a username &amp; password.</div>
+              </div>
             </div>
-          </template>
+            <button class="btn btn-sm btn-warning shrink-0" @click="openAuthModal">
+              🔒 Set up Basic Auth
+            </button>
+          </div>
 
-          <!-- No saved connections → show connect button only -->
-          <template v-else-if="!connections.length">
-            <div class="text-center">
-              <button class="btn btn-primary btn-lg gap-2" @click="goLogin">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Connect to a Database
-              </button>
-              <p class="text-base-content/40 text-sm mt-3">MySQL · MariaDB · PostgreSQL · SQLite</p>
-            </div>
-          </template>
-
-          <!-- Saved connections list -->
-          <template v-else>
-            <h2 class="text-base font-semibold mb-3 flex items-center gap-2 text-base-content/70">
-              <span>⚡</span> Saved Connections
-              <span class="badge badge-primary badge-sm badge-outline">{{ connections.length }}</span>
-            </h2>
-
-            <div class="flex flex-col gap-3 mb-6">
+          <!-- Saved connections -->
+          <template v-if="!loadingConns && connections.length > 0">
+            <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wider mb-3">Saved connections</h2>
+            <div class="grid gap-3 mb-6">
               <div
                 v-for="conn in connections"
                 :key="conn.id"
-                class="card bg-base-100 hover:bg-base-200 shadow-sm cursor-pointer transition-all border border-base-300 hover:border-primary"
+                :class="[
+                  'card bg-base-100 shadow transition-shadow',
+                  store.authenticated && store.connId === conn.id
+                    ? 'ring-2 ring-success cursor-pointer hover:shadow-md'
+                    : connecting ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:shadow-md'
+                ]"
                 @click="autoConnect(conn)"
               >
                 <div class="card-body p-4 flex-row items-center gap-4">
-                  <div class="text-3xl flex-shrink-0">{{ DRIVER_ICONS[conn.driver] || '🗄️' }}</div>
+                  <span class="text-3xl">{{ DRIVER_ICONS[conn.driver] || '🗄️' }}</span>
                   <div class="flex-1 min-w-0">
                     <div class="font-semibold truncate">{{ conn.label }}</div>
-                    <div class="text-xs text-base-content/50 truncate">
-                      {{ DRIVER_LABELS[conn.driver] || conn.driver }}
-                      <span v-if="conn.server"> · {{ conn.server }}</span>
-                      <span v-if="conn.db"> · {{ conn.db }}</span>
-                    </div>
+                    <div class="text-xs text-base-content/50">{{ DRIVER_LABELS[conn.driver] || conn.driver }}</div>
                   </div>
-                  <div v-if="connecting === conn.id" class="flex-shrink-0">
-                    <span class="loading loading-spinner loading-sm text-primary"></span>
-                  </div>
+                  <span v-if="connecting === conn.id" class="loading loading-spinner loading-sm text-primary"></span>
                   <template v-else>
-                    <span class="badge badge-ghost badge-sm flex-shrink-0">Connect →</span>
+                    <span v-if="store.authenticated && store.connId === conn.id"
+                      class="badge badge-success badge-sm gap-1 shrink-0">
+                      ● Active
+                    </span>
                     <button
-                      class="btn btn-ghost btn-xs text-error opacity-40 hover:opacity-100 flex-shrink-0"
-                      title="Remove from saved connections"
+                      class="btn btn-ghost btn-xs text-base-content/30 hover:text-error hover:bg-error/10"
+                      title="Remove"
                       @click="askRemove(conn, $event)"
                     >✕</button>
                   </template>
                 </div>
               </div>
             </div>
+            <div class="text-center">
+              <button class="btn btn-outline btn-sm" @click="goLogin">＋ Connect to another database</button>
+            </div>
+          </template>
 
-            <div class="divider text-xs text-base-content/40">or</div>
+          <!-- No saved connections -->
+          <template v-else-if="!loadingConns">
+            <div class="text-center">
+              <button class="btn btn-primary btn-lg" @click="goLogin">Connect to a Database</button>
+            </div>
+          </template>
 
-            <div class="text-center mt-4">
-              <button class="btn btn-outline btn-sm gap-2" @click="goLogin">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Connect to another database
-              </button>
+          <!-- Loading -->
+          <template v-else>
+            <div class="flex justify-center py-10">
+              <span class="loading loading-dots loading-lg text-primary"></span>
             </div>
           </template>
 
         </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="text-center py-4 text-xs text-base-content/30">
-        adminer-node · <a href="https://intrane.fr" target="_blank" class="hover:text-base-content/60">intrane.fr</a>
       </div>
     </div>
   `,

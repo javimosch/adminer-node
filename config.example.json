@@ -1,0 +1,39 @@
+{
+  "port": 8080,
+  "host": "127.0.0.1",
+
+  "basicAuth": {
+    "username": "admin",
+    "password": "changeme",
+    "realm": "adminer-node"
+  },
+
+  "connections": [
+    {
+      "id": "local-mysql",
+      "label": "Local MySQL",
+      "driver": "mysql",
+      "server": "127.0.0.1",
+      "username": "root",
+      "password": "secret",
+      "db": "mydb"
+    },
+    {
+      "id": "local-pgsql",
+      "label": "Local PostgreSQL",
+      "driver": "pgsql",
+      "server": "127.0.0.1:5432",
+      "username": "postgres",
+      "password": "secret",
+      "db": "mydb"
+    },
+    {
+      "id": "dev-sqlite",
+      "label": "Dev SQLite",
+      "driver": "sqlite",
+      "server": "/home/user/projects/myapp/dev.db",
+      "username": "",
+      "password": ""
+    }
+  ]
+}

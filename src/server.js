@@ -2,6 +2,7 @@ import http from 'http';
 import { attachHelpers, parseBody, setSecurityHeaders } from './response.js';
 import { parseSession, saveSession } from './session.js';
 import { authMiddleware } from './auth.js';
+import { createBasicAuthMiddleware } from './basicAuth.js';
 import { route, register } from './router.js';
 import { loadDrivers } from './drivers/index.js';
 import { listDrivers } from './drivers/base.js';
@@ -22,14 +23,21 @@ import { registerIndexRoutes } from './api/indexes.js';
 import { registerForeignRoutes } from './api/foreign.js';
 import { registerUserRoutes } from './api/users.js';
 import { registerVariableRoutes } from './api/variables.js';
+import { registerConnectionRoutes } from './api/connections.js';
 
 export async function startServer(config) {
   // Load DB drivers (may fail silently if npm package not installed)
   await loadDrivers();
 
+  // Create optional basic auth middleware
+  const basicAuth = createBasicAuthMiddleware(config);
+
   // ── Static / SPA routes ──────────────────────────────────────────────────
   register('GET', '/app/*', assetsHandler);
   register('GET', '/',      shellHandler);
+
+  // ── Health check (always public, used by Docker/compose healthcheck) ──────
+  register('GET', '/health', (_req, res) => res.json({ ok: true, version: config.version }));
 
   // ── Public API routes ────────────────────────────────────────────────────
   register('GET', '/api/drivers', (_req, res) => res.json(listDrivers()));
@@ -61,6 +69,7 @@ export async function startServer(config) {
   registerForeignRoutes();
   registerUserRoutes();
   registerVariableRoutes();
+  registerConnectionRoutes(config);
 
   // ── HTTP Server ──────────────────────────────────────────────────────────
   const server = http.createServer(async (req, res) => {
@@ -73,6 +82,12 @@ export async function startServer(config) {
     req.search = url.search;
 
     try {
+      // Basic Auth gate (optional — only if configured)
+      if (basicAuth && req.pathname !== '/health') {
+        const allowed = basicAuth(req, res);
+        if (!allowed) return; // basicAuth already sent 401
+      }
+
       parseSession(req, res, config);
       // Register session save as a pre-end hook so cookie is set before headers flush
       res.addPreEndHook(() => saveSession(req, res, config));

@@ -1,83 +1,125 @@
-import { ref, inject, onMounted } from 'vue';
-import { api } from '../api.js';
+import { inject, ref, onMounted } from 'vue';
+import AppLayout from '../components/AppLayout.js';
+
+const DRIVER_ICONS = { mysql: '🐬', pgsql: '🐘', sqlite: '📦' };
+const DRIVER_LABELS = { mysql: 'MySQL / MariaDB', pgsql: 'PostgreSQL', sqlite: 'SQLite' };
 
 export default {
   name: 'HomeView',
+  components: { AppLayout },
   setup() {
-    const store = inject('store');
+    const store    = inject('store');
     const navigate = inject('navigate');
-    const databases = ref([]);
-    const loading = ref(true);
-    const error = ref('');
+    const api      = inject('api');
+
+    const connections  = ref([]);
+    const connecting   = ref(null); // id of connection being auto-connected
+    const loadingConns = ref(true);
 
     onMounted(async () => {
-      const { data, error: err } = await api.databases();
-      loading.value = false;
-      if (err) { error.value = err; return; }
-      databases.value = data?.databases || [];
+      try {
+        const data = await api.get('/api/connections');
+        connections.value = data.connections || [];
+      } catch { /* no presets — that's fine */ }
+      loadingConns.value = false;
     });
 
-    function openDb(db) {
-      store.setDb(db);
-      navigate(`/db/${encodeURIComponent(db)}`);
+    async function autoConnect(conn) {
+      if (connecting.value) return;
+      connecting.value = conn.id;
+      try {
+        const result = await api.post(`/api/connections/${conn.id}/connect`);
+        store.setAuth(result);
+        store.addMessage(`Connected to ${conn.label}`, 'success');
+        navigate('/databases');
+      } catch (e) {
+        store.addMessage(e.message || 'Connection failed', 'error');
+      } finally {
+        connecting.value = null;
+      }
     }
 
-    return { store, navigate, databases, loading, error, openDb };
+    function goLogin() { navigate('/login'); }
+
+    return { store, connections, connecting, loadingConns, autoConnect, goLogin,
+             DRIVER_ICONS, DRIVER_LABELS };
   },
   template: `
-    <div class="space-y-6 max-w-4xl">
-      <!-- Server info card -->
-      <div class="card bg-base-100 border border-base-300 shadow-sm">
-        <div class="card-body py-4">
-          <h2 class="card-title text-base">Server Information</h2>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm" v-if="store.serverInfo">
-            <div>
-              <div class="text-base-content/50 text-xs uppercase tracking-wide mb-1">Driver</div>
-              <div class="font-mono font-medium">{{ store.conn?.driver }}</div>
-            </div>
-            <div>
-              <div class="text-base-content/50 text-xs uppercase tracking-wide mb-1">Server</div>
-              <div class="font-mono font-medium truncate">{{ store.conn?.server || '—' }}</div>
-            </div>
-            <div>
-              <div class="text-base-content/50 text-xs uppercase tracking-wide mb-1">User</div>
-              <div class="font-mono font-medium">{{ store.serverInfo?.user || store.conn?.username || '—' }}</div>
-            </div>
-            <div>
-              <div class="text-base-content/50 text-xs uppercase tracking-wide mb-1">Version</div>
-              <div class="font-mono font-medium text-xs">{{ store.serverInfo?.version || '—' }}</div>
+    <app-layout :crumbs="[{ label: 'Home', path: '/' }]">
+      <div class="max-w-4xl mx-auto py-8 px-4">
+
+        <!-- Header -->
+        <div class="text-center mb-10">
+          <div class="text-6xl mb-3">🗄️</div>
+          <h1 class="text-3xl font-bold mb-2">adminer-node</h1>
+          <p class="text-base-content/60">Lightweight database management UI</p>
+        </div>
+
+        <!-- Saved connections -->
+        <template v-if="loadingConns">
+          <div class="flex justify-center py-8">
+            <span class="loading loading-spinner loading-md text-primary"></span>
+          </div>
+        </template>
+
+        <template v-else-if="connections.length">
+          <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span>⚡</span> Saved Connections
+            <span class="badge badge-primary badge-outline">{{ connections.length }}</span>
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div
+              v-for="conn in connections"
+              :key="conn.id"
+              class="card bg-base-200 hover:bg-base-300 shadow cursor-pointer transition-all"
+              @click="autoConnect(conn)"
+            >
+              <div class="card-body p-5 flex-row items-center gap-4">
+                <div class="text-4xl">{{ DRIVER_ICONS[conn.driver] || '🗄️' }}</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold truncate">{{ conn.label }}</div>
+                  <div class="text-sm text-base-content/50 truncate">
+                    {{ DRIVER_LABELS[conn.driver] || conn.driver }}
+                    {{ conn.server ? '· ' + conn.server : '' }}
+                    {{ conn.db ? '· ' + conn.db : '' }}
+                  </div>
+                </div>
+                <div v-if="connecting === conn.id">
+                  <span class="loading loading-spinner loading-sm text-primary"></span>
+                </div>
+                <div v-else class="badge badge-ghost">Connect →</div>
+              </div>
             </div>
           </div>
-          <div v-else class="text-sm text-base-content/50">Reconnect to see server details.</div>
-        </div>
-      </div>
+          <div class="divider">or connect manually</div>
+        </template>
 
-      <!-- Databases -->
-      <div>
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg font-semibold">Databases</h2>
-          <button v-if="store.conn?.driver !== 'sqlite'" class="btn btn-sm btn-primary"
-            @click="navigate('/db')">+ New Database</button>
-        </div>
-
-        <div v-if="error" class="alert alert-error text-sm">{{ error }}</div>
-        <div v-if="loading" class="flex justify-center py-8">
-          <span class="loading loading-spinner loading-lg text-primary"></span>
-        </div>
-        <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          <button v-for="db in databases" :key="db"
-            class="card bg-base-100 border border-base-300 shadow-sm hover:border-primary hover:shadow-md transition-all text-left p-4"
-            @click="openDb(db)">
-            <div class="flex items-center gap-2">
-              <span class="text-2xl">🗃️</span>
-              <span class="font-medium text-sm truncate">{{ db }}</span>
-            </div>
+        <!-- Manual connect button -->
+        <div class="text-center" :class="{ 'mt-4': !connections.length }">
+          <button class="btn btn-primary btn-lg gap-2" @click="goLogin">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Connect to a Database
           </button>
-          <div v-if="!databases.length && !loading" class="col-span-full text-center py-8 text-base-content/50">
-            No databases found.
+          <p class="text-base-content/40 text-sm mt-3">MySQL, MariaDB, PostgreSQL, SQLite</p>
+        </div>
+
+        <!-- Already connected -->
+        <div v-if="store.auth" class="alert alert-info mt-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20A10 10 0 0012 2z" />
+          </svg>
+          <div>
+            Already connected as <strong>{{ store.auth.conn?.username || 'anonymous' }}</strong>
+            on <strong>{{ store.auth.conn?.server }}</strong>.
+            <button class="btn btn-xs btn-ghost ml-2" @click="navigate('/databases')">Browse →</button>
           </div>
         </div>
+
       </div>
-    </div>
+    </app-layout>
   `,
 };

@@ -82,18 +82,19 @@ export function connKey(driver, server, username) {
   return `${driver}:${server}:${username}`;
 }
 
-export async function loginHandler(req, res, config) {
-  const { driver, server, username, password, db } = req.body || {};
-  // username may be empty string for SQLite; password must be present (can be empty for SQLite)
-  if (!driver || username == null || password == null) {
-    return res.error('driver, username and password are required', 400);
-  }
-
-  const bruteMsg = checkBruteForce(req, config);
-  if (bruteMsg) return res.error(bruteMsg, 429, { code: 'BRUTE_FORCE' });
+/**
+ * Core login logic — shared by loginHandler (HTTP) and auto-connect (saved connections).
+ * @param {object} req
+ * @param {object} res
+ * @param {object} config
+ * @param {object} creds  - { driver, server, username, password, db }
+ * @returns {{ error: string|null, csrfToken, conn, driverConfig, serverInfo }}
+ */
+export async function loginWithCredentials(req, res, config, creds) {
+  const { driver, server, username, password, db } = creds;
 
   const driverDef = getDriver(driver);
-  if (!driverDef) return res.error('Unknown driver', 400);
+  if (!driverDef) return { error: 'Unknown driver' };
 
   let conn;
   try {
@@ -101,11 +102,11 @@ export async function loginHandler(req, res, config) {
     const err = await conn.connect(server || '', username, password);
     if (err) {
       recordFailedLogin(req, config);
-      return res.error(err, 401, { code: 'NOT_AUTHENTICATED' });
+      return { error: err };
     }
   } catch (e) {
     recordFailedLogin(req, config);
-    return res.error(e.message, 503, { code: 'DB_UNAVAILABLE' });
+    return { error: e.message };
   }
 
   resetBruteForce(req);
@@ -122,21 +123,41 @@ export async function loginHandler(req, res, config) {
   };
   req.session.currentConn = key;
 
-  // Generate new CSRF token seed on login
   req.session.token = Math.floor(Math.random() * 1e9);
   const { token: csrfToken } = generateCsrfToken(req.session);
 
-  // Get driver config
   const driverConfig = conn.config();
   let serverInfo = {};
   try { serverInfo = await conn.serverInfo(); } catch {}
   await conn.disconnect();
 
-  res.json({
+  return {
+    error: null,
     csrfToken,
     conn: { driver, server: server || '', username, db: db || '' },
     driverConfig,
     serverInfo,
+  };
+}
+
+export async function loginHandler(req, res, config) {
+  const { driver, server, username, password, db } = req.body || {};
+  // username may be empty string for SQLite; password must be present (can be empty for SQLite)
+  if (!driver || username == null || password == null) {
+    return res.error('driver, username and password are required', 400);
+  }
+
+  const bruteMsg = checkBruteForce(req, config);
+  if (bruteMsg) return res.error(bruteMsg, 429, { code: 'BRUTE_FORCE' });
+
+  const result = await loginWithCredentials(req, res, config, { driver, server, username, password, db });
+  if (result.error) return res.error(result.error, 401, { code: 'NOT_AUTHENTICATED' });
+
+  res.json({
+    csrfToken:    result.csrfToken,
+    conn:         result.conn,
+    driverConfig: result.driverConfig,
+    serverInfo:   result.serverInfo,
   });
 }
 
@@ -151,11 +172,14 @@ export async function authMiddleware(req, res, config) {
   // Parse pathname here since route() hasn't run yet
   const pathname = req.pathname || new URL(req.url, 'http://localhost').pathname;
 
-  const publicPaths = ['/', '/api/drivers', '/api/status', '/api/auth/login', '/api/auth/logout'];
+  const publicPaths = ['/', '/api/drivers', '/api/status', '/api/auth/login', '/api/auth/logout', '/health'];
   if (publicPaths.includes(pathname)) return;
   if (pathname.startsWith('/app/')) return;
   // Non-API paths are SPA routes — serve shell without auth check
   if (!pathname.startsWith('/api/')) return;
+  // Saved connections list and auto-connect are public (password never leaves server)
+  if (pathname === '/api/connections') return;
+  if (pathname.startsWith('/api/connections/') && pathname.endsWith('/connect')) return;
 
   const session = req.session;
   const key = session?.currentConn;

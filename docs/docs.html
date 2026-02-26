@@ -69,6 +69,13 @@
         <li><a href="#dump"       class="sidebar-link">Export / Dump</a></li>
         <li><a href="#security"   class="sidebar-link">Security</a></li>
 
+        <li class="menu-title mt-4">Configuration</li>
+        <li><a href="#config-file"    class="sidebar-link">Config File</a></li>
+        <li><a href="#saved-conns"    class="sidebar-link">Saved Connections</a></li>
+        <li><a href="#env-vars"       class="sidebar-link">Environment Variables</a></li>
+        <li><a href="#basic-auth"     class="sidebar-link">HTTP Basic Auth</a></li>
+        <li><a href="#docker-conns"   class="sidebar-link">Docker + Connections</a></li>
+
         <li class="menu-title mt-4">API</li>
         <li><a href="#api-ref" class="sidebar-link">REST API Reference</a></li>
 
@@ -249,6 +256,126 @@
         <li><strong>Local-only by default</strong> — server binds to <code>127.0.0.1</code>; set <code>HOST=0.0.0.0</code> explicitly for Docker/remote access</li>
       </ul>
 
+      <!-- ─── Configuration ─── -->
+      <h2 id="config-file">Config File</h2>
+      <p>adminer-node automatically loads <code>~/.config/adminer-node/config.json</code> on startup. You can also specify a custom path:</p>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="keyword">npx</span> adminer-node <span class="flag">--config</span> /path/to/config.json</p>
+        <p><span class="comment"># or via environment variable</span></p>
+        <p>ADMINER_CONFIG=/path/to/config.json <span class="keyword">npx</span> adminer-node</p>
+      </div>
+      <p>Priority order (highest wins): CLI flags → environment variables → config file → defaults.</p>
+
+      <h2 id="saved-conns">Saved Connections</h2>
+      <p>Define connection presets in your config file. They appear as <strong>one-click cards</strong> on the home screen. The password is stored only on the server — it is never sent to the browser.</p>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p>{</p>
+        <p>  <span class="flag">"connections"</span>: [</p>
+        <p>    {</p>
+        <p>      <span class="flag">"id"</span>:       <span class="string">"prod-mysql"</span>,</p>
+        <p>      <span class="flag">"label"</span>:    <span class="string">"Production MySQL"</span>,</p>
+        <p>      <span class="flag">"driver"</span>:   <span class="string">"mysql"</span>,</p>
+        <p>      <span class="flag">"server"</span>:   <span class="string">"db.example.com"</span>,</p>
+        <p>      <span class="flag">"username"</span>: <span class="string">"app"</span>,</p>
+        <p>      <span class="flag">"password"</span>: <span class="string">"s3cr3t"</span>,</p>
+        <p>      <span class="flag">"db"</span>:       <span class="string">"myapp"</span></p>
+        <p>    },</p>
+        <p>    {</p>
+        <p>      <span class="flag">"id"</span>:       <span class="string">"local-sqlite"</span>,</p>
+        <p>      <span class="flag">"label"</span>:    <span class="string">"Dev SQLite"</span>,</p>
+        <p>      <span class="flag">"driver"</span>:   <span class="string">"sqlite"</span>,</p>
+        <p>      <span class="flag">"server"</span>:   <span class="string">"/home/user/dev.db"</span>,</p>
+        <p>      <span class="flag">"username"</span>: <span class="string">""</span>,</p>
+        <p>      <span class="flag">"password"</span>: <span class="string">""</span></p>
+        <p>    }</p>
+        <p>  ]</p>
+        <p>}</p>
+      </div>
+      <p>Connection fields:</p>
+      <table>
+        <thead><tr><th>Field</th><th>Required</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>No</td><td>Unique ID for auto-connect API. Defaults to array index.</td></tr>
+          <tr><td><code>label</code></td><td>Yes</td><td>Display name shown on the home screen card</td></tr>
+          <tr><td><code>driver</code></td><td>Yes</td><td><code>mysql</code> | <code>pgsql</code> | <code>sqlite</code></td></tr>
+          <tr><td><code>server</code></td><td>Yes</td><td>Host/IP (MySQL/PgSQL) or file path (SQLite)</td></tr>
+          <tr><td><code>username</code></td><td>No</td><td>Empty string for SQLite</td></tr>
+          <tr><td><code>password</code></td><td>No</td><td>Empty string for SQLite</td></tr>
+          <tr><td><code>db</code></td><td>No</td><td>Default database to select after login</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="env-vars">Environment Variables</h2>
+      <table>
+        <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>PORT</code> / <code>ADMINER_PORT</code></td><td><code>8080</code></td><td>HTTP port</td></tr>
+          <tr><td><code>HOST</code> / <code>ADMINER_HOST</code></td><td><code>127.0.0.1</code></td><td>Bind host (<code>0.0.0.0</code> for Docker)</td></tr>
+          <tr><td><code>ADMINER_DRIVER</code></td><td>—</td><td>Pre-select driver on login form</td></tr>
+          <tr><td><code>ADMINER_NO_OPEN=1</code></td><td>—</td><td>Disable auto browser open</td></tr>
+          <tr><td><code>ADMINER_CONFIG</code></td><td>—</td><td>Path to config JSON file</td></tr>
+          <tr><td><code>ADMINER_CONNECTIONS</code></td><td>—</td><td>JSON array of connection presets</td></tr>
+          <tr><td><code>ADMINER_BASIC_USER</code></td><td>—</td><td>HTTP Basic Auth username</td></tr>
+          <tr><td><code>ADMINER_BASIC_PASS</code></td><td>—</td><td>HTTP Basic Auth password</td></tr>
+        </tbody>
+      </table>
+      <p>Example — inject connections via environment (useful in CI/CD or Docker Compose):</p>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p>ADMINER_CONNECTIONS='[{"label":"App DB","driver":"mysql","server":"127.0.0.1","username":"root","password":"secret","db":"app"}]' \</p>
+        <p>  <span class="keyword">npx</span> adminer-node</p>
+      </div>
+
+      <h2 id="basic-auth">HTTP Basic Auth</h2>
+      <p>Add an extra layer of protection when exposing adminer-node on a public URL (e.g. behind a reverse proxy). Basic Auth is checked before the DB login form.</p>
+      <p>⚠️ Always use HTTPS when enabling Basic Auth on a public URL.</p>
+      <h3>Via config file</h3>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p>{</p>
+        <p>  <span class="flag">"basicAuth"</span>: {</p>
+        <p>    <span class="flag">"username"</span>: <span class="string">"admin"</span>,</p>
+        <p>    <span class="flag">"password"</span>: <span class="string">"changeme"</span>,</p>
+        <p>    <span class="flag">"realm"</span>:    <span class="string">"My Adminer"</span></p>
+        <p>  }</p>
+        <p>}</p>
+      </div>
+      <h3>Via environment variables</h3>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p>ADMINER_BASIC_USER=admin ADMINER_BASIC_PASS=changeme <span class="keyword">npx</span> adminer-node</p>
+      </div>
+      <p>The <code>/health</code> endpoint is always exempt from Basic Auth so Docker health checks keep working.</p>
+
+      <h2 id="docker-conns">Docker + Pre-configured Connections</h2>
+      <h3>Via environment variable</h3>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="keyword">services</span>:</p>
+        <p>  <span class="flag">adminer-node</span>:</p>
+        <p>    <span class="keyword">image</span>: <span class="string">javimosch/adminer-node:latest</span></p>
+        <p>    <span class="keyword">ports</span>: [<span class="string">"8080:8080"</span>]</p>
+        <p>    <span class="keyword">environment</span>:</p>
+        <p>      HOST: <span class="string">0.0.0.0</span></p>
+        <p>      ADMINER_BASIC_USER: <span class="string">admin</span></p>
+        <p>      ADMINER_BASIC_PASS: <span class="string">changeme</span></p>
+        <p>      ADMINER_CONNECTIONS: <span class="string">'[{"label":"App DB","driver":"mysql","server":"mariadb","username":"root","password":"secret","db":"app"}]'</span></p>
+        <p>    <span class="keyword">depends_on</span>: [mariadb]</p>
+        <p>  <span class="flag">mariadb</span>:</p>
+        <p>    <span class="keyword">image</span>: <span class="string">mariadb:11</span></p>
+        <p>    <span class="keyword">environment</span>:</p>
+        <p>      MARIADB_ROOT_PASSWORD: <span class="string">secret</span></p>
+        <p>      MARIADB_DATABASE: <span class="string">app</span></p>
+      </div>
+      <h3>Via mounted config file</h3>
+      <div class="code-block rounded-xl p-5 my-4 text-sm leading-7">
+        <p><span class="keyword">services</span>:</p>
+        <p>  <span class="flag">adminer-node</span>:</p>
+        <p>    <span class="keyword">image</span>: <span class="string">javimosch/adminer-node:latest</span></p>
+        <p>    <span class="keyword">ports</span>: [<span class="string">"8080:8080"</span>]</p>
+        <p>    <span class="keyword">environment</span>:</p>
+        <p>      HOST: <span class="string">0.0.0.0</span></p>
+        <p>      ADMINER_CONFIG: <span class="string">/config/adminer-node.json</span></p>
+        <p>    <span class="keyword">volumes</span>:</p>
+        <p>      - ./adminer-node.json:/config/adminer-node.json:ro</p>
+      </div>
+
       <!-- ─── API ─── -->
       <h2 id="api-ref">REST API Reference</h2>
       <p>All API routes are under <code>/api/</code>. Authenticated routes require a valid session cookie.</p>
@@ -274,6 +401,9 @@
           <tr><td>GET</td><td><code>/api/dump/:db</code></td><td>Export SQL dump</td></tr>
           <tr><td>GET</td><td><code>/api/variables</code></td><td>Server variables</td></tr>
           <tr><td>GET</td><td><code>/api/users</code></td><td>List database users (MySQL)</td></tr>
+          <tr><td>GET</td><td><code>/api/connections</code></td><td>List saved connection presets (passwords omitted)</td></tr>
+          <tr><td>POST</td><td><code>/api/connections/:id/connect</code></td><td>Auto-login using a saved preset (password stays server-side)</td></tr>
+          <tr><td>GET</td><td><code>/health</code></td><td>Health check — always public, used by Docker healthcheck</td></tr>
         </tbody>
       </table>
 

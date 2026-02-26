@@ -69,6 +69,7 @@ export function registerConnectionRoutes(config) {
       driverConfig: result.driverConfig,
       serverInfo:   result.serverInfo,
       label:        conn.label || conn.driver,
+      connId:       req.params.id,
     });
   });
 }

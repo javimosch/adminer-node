@@ -20,11 +20,13 @@ import DumpView from './views/DumpView.js';
 import UsersView from './views/UsersView.js';
 import VariablesView from './views/VariablesView.js';
 import CreateTableView from './views/CreateTableView.js';
+import ServerInfoView from './views/ServerInfoView.js';
 
 // Register routes
 addRoute('/',                               HomeView);   // root → home (saved connections)
 addRoute('/login',                          LoginView);
 addRoute('/home',                           HomeView);
+addRoute('/databases',                      ServerInfoView);
 addRoute('/db',                             DatabaseView);        // create db
 addRoute('/db/:db',                         TableListView);       // list tables
 addRoute('/db/:db/tables',                  TableListView);
@@ -79,7 +81,13 @@ const App = {
       resolveRoute();
     });
 
-    const showLayout = computed(() => store.authenticated && currentRoute.value !== LoginView);
+    const showLayout = computed(() => {
+      const route = currentRoute.value;
+      const routeName = route?.name;
+      const noLayout = routeName === 'HomeView' || routeName === 'LoginView';
+      const result = store.authenticated && !!route && !noLayout;
+      return result;
+    });
 
     return { currentRoute, routeParams, loading, showLayout };
   },
@@ -89,7 +97,7 @@ const App = {
       <div v-if="loading" class="flex items-center justify-center min-h-screen">
         <span class="loading loading-spinner loading-lg text-primary"></span>
       </div>
-      <template v-else>
+      <template v-else-if="currentRoute">
         <AppLayout v-if="showLayout" :params="routeParams">
           <component :is="currentRoute" :params="routeParams" />
         </AppLayout>

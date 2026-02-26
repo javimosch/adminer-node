@@ -180,6 +180,8 @@ export async function authMiddleware(req, res, config) {
   // Saved connections endpoints are public (passwords never leave server)
   if (pathname === '/api/connections') return;
   if (pathname.startsWith('/api/connections/')) return;
+  // Config endpoints are public (allow setting basic auth before any DB session)
+  if (pathname.startsWith('/api/config/')) return;
 
   const session = req.session;
   const key = session?.currentConn;
